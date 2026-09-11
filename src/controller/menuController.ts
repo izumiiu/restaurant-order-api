@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express";
 import Recipes from "../model/Recipes.js";
+import { isValidMenuname, isValidPrice } from "../utils/validateMenu.js";
 
 
 const getAllRecipes: RequestHandler = async (req, res) => {
@@ -10,17 +11,16 @@ const getAllRecipes: RequestHandler = async (req, res) => {
 
 const addMenu: RequestHandler = async (req, res) => {
     const { menuname, price } = req.body;
-    if(!menuname || typeof price !== 'number' || !Number.isFinite(price) || price <= 0) {
-        return res.status(400).json({ 'message': 'menuname and price are required'});
-    };
+    if(!isValidMenuname(menuname)) return res.status(400).json({'message': 'invalid menuname'})
+    if(!isValidPrice(price)) return res.status(400).json({'message': 'invalid price'})
 
-    const duplicateMenu = await Recipes.findOne({ menuname: req.body.menuname }).exec();
+    const duplicateMenu = await Recipes.findOne({ menuname: menuname.trim() }).exec();
     if (duplicateMenu) return res.sendStatus(409);
 
     try{
         const menu = await Recipes.create({
-            menuname: req.body.menuname,
-            price: req.body.price
+            menuname: menuname.trim(),
+            price: price
         });
         res.status(201).json(menu);
     } catch (err: any){
@@ -45,16 +45,15 @@ const updateMenu: RequestHandler = async (req, res) => {
         // แก้เฉพาะ field ที่ส่งมา (ถ้าไม่ส่งมาก็คงค่าเดิม)
         // ชื่อส่งมาไหม? ถ้าส่งมเช็คก่อนว่าชื่อซ้ำกับอันอื่นไหมถ้าไม่ซ้ำก็เปลี่ยนชื่อ
         if (req.body.menuname !== undefined) {
-            if (typeof req.body.menuname !== 'string') return res.status(400).json({ 'message': 'invalid menuname'});
+            if (!isValidMenuname(req.body.menuname)) return res.status(400).json({ 'message': 'invalid menuname'});
             const menuname = req.body.menuname.trim();     // ปลอดภัยแล้ว
-            if(menuname === "") return res.status(400).json({'message': `menuname should not have space`})
             //บอก MongoDB ว่า "ห้ามนับตัวที่กำลังแก้อยู่" | $ne = not equal — เป็น query operator ตัวแรกที่คุณได้ใช้ ยังมี $gt $lt $in $regex อีกเพียบ พวกนี้เขียนอยู่ในค่าของ field แทนที่จะเป็นค่าตรงๆ
             const duplicate = await Recipes.findOne({ menuname: menuname, _id: { $ne: req.params.id } }).exec();
             if(duplicate) return res.sendStatus(409);
             menuID.menuname = menuname;
         }
         if (req.body.price !== undefined) {
-            if(typeof req.body.price !== 'number' || !Number.isFinite(req.body.price) || req.body.price <= 0){
+            if(!isValidPrice(req.body.price)){
             return res.status(400).json({ 'message': 'invalid menu price'});
             }   
             menuID.price = req.body.price;
