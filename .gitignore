@@ -26,3 +26,6 @@ Thumbs.db
 # Optional caches
 .npm/
 *.tsbuildinfo
+
+# Claude / AI notes (ไม่ใช่ส่วนหนึ่งของโปรเจกต์)
+_notes/
