@@ -19,4 +19,4 @@ const Recipes = new Schema<Recipes>({
     }
 })
 
-export default mongoose.model<Recipes>('foodmenu', Recipes);
+export default mongoose.model<Recipes>('Foodmenu', Recipes);

@@ -7,7 +7,7 @@ const PORT = 3500;
 const app = express();
 import connectDB from './config/dbConn.js';
 
-import logger from './middleware/logEvents.js';
+import { logger } from './middleware/logEvents.js';
 import registerRouter from './routes/register.js';
 import manageMenuRouter from './routes/api/manageMenu.js';
 
