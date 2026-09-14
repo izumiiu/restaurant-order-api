@@ -3,29 +3,28 @@ const Schema = mongoose.Schema;
 
 interface User {
     username: string,
-    roles?: {
-        User?: number,
-        Admin?: number
-    },
+    role: 'customer' | 'employee',
     password: string,
-    refreshToken: string,
+    refreshToken?: string,
 }
 
 const userSchema = new Schema<User> ({
     username: {
         type: String,
-        required: true
+        required: true,
+        unique: true,
+        trim: true
     },
-    roles: {
-        User: {
-            type: Number,
-            default: 2001
-        },
-        Admin: Number
+    role: {
+        type: String,
+        enum: ['customer', 'employee'],
+        default: 'customer',
+        required: true
     },
     password: {
         type: String,
-        required: true
+        required: true,
+        select: false
     },
     refreshToken: String
 })

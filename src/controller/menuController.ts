@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
 import Recipes from "../model/Recipes.js";
-import { isValidMenuname, isValidPrice } from "../utils/validateMenu.js";
+import { isValidMenuname, isValidPrice } from "../utils/validators.js";
 import mongoose from "mongoose";
 
 const getAllRecipes: RequestHandler = async (req, res) => {
