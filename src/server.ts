@@ -12,7 +12,7 @@ import registerRouter from './routes/register.js';
 import manageMenuRouter from './routes/api/manageMenu.js';
 import authRouter from './routes/auth.js';
 import cookieParser from 'cookie-parser';
-
+import verifyJWT from './middleware/verifyJWT.js';
 
 connectDB();
 
@@ -22,15 +22,11 @@ app.use(express.json());
 
 app.use(cookieParser());
 
-
-
 app.use(logger);
 
 app.use('/register', registerRouter);
 app.use('/auth', authRouter);
-app.use('/manageMenu', manageMenuRouter);
-
-
+app.use('/manageMenu', verifyJWT, manageMenuRouter);
 
 
 mongoose.connection.once('open', () => {
