@@ -26,7 +26,7 @@ const userSchema = new Schema<User> ({
         required: true,
         select: false
     },
-    refreshToken: String
+    refreshToken: { type: String, select: false }
 })
 
 export default mongoose.model<User>('User', userSchema);

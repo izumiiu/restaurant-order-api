@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
+import { DATABASE_URI } from "./loadEnv.js";
 
 
 const connectDB = async () => {
     try{
-        await mongoose.connect(process.env.DATABASE_URI!);
+        await mongoose.connect(DATABASE_URI);
     } catch (err){
         console.log(err);
     }

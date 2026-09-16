@@ -10,17 +10,24 @@ import connectDB from './config/dbConn.js';
 import { logger } from './middleware/logEvents.js';
 import registerRouter from './routes/register.js';
 import manageMenuRouter from './routes/api/manageMenu.js';
+import authRouter from './routes/auth.js';
+import cookieParser from 'cookie-parser';
 
 
 connectDB();
 
+app.use(express.urlencoded({ extended: false }));
+
 app.use(express.json());
 
-app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+
+
 
 app.use(logger);
 
 app.use('/register', registerRouter);
+app.use('/auth', authRouter);
 app.use('/manageMenu', manageMenuRouter);
 
 

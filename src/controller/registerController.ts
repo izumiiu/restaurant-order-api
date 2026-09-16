@@ -22,8 +22,6 @@ const handleNewUser: RequestHandler = async (req, res) => {
 
         //encrypt the password
         const hashedPwd = await bcrypt.hash(password, 10);
-        
-
 
         //create and store the new user
         await User.create({ 

@@ -7,4 +7,4 @@ router.post('/', registerLog, registerController)
 
 
 
-export default router
+export default router;
