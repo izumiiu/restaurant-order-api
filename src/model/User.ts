@@ -5,7 +5,7 @@ interface User {
     username: string,
     role: 'customer' | 'employee',
     password: string,
-    refreshToken?: string,
+    refreshToken?: string | undefined
 }
 
 const userSchema = new Schema<User> ({
@@ -26,7 +26,7 @@ const userSchema = new Schema<User> ({
         required: true,
         select: false
     },
-    refreshToken: { type: String, select: false }
+    refreshToken: { type: String , select: false }
 })
 
 export default mongoose.model<User>('User', userSchema);

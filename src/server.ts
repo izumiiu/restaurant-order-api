@@ -14,6 +14,7 @@ import authRouter from './routes/auth.js';
 import cookieParser from 'cookie-parser';
 import verifyJWT from './middleware/verifyJWT.js';
 import refreshRouter from './routes/refresh.js';
+import logoutRouter from './routes/logout.js';
 connectDB();
 
 app.use(express.urlencoded({ extended: false }));
@@ -27,6 +28,7 @@ app.use(logger);
 app.use('/register', registerRouter);
 app.use('/auth', authRouter);
 app.use('/refresh', refreshRouter);
+app.use('/logout', logoutRouter);
 app.use('/manageMenu', verifyJWT, manageMenuRouter);
 
 
