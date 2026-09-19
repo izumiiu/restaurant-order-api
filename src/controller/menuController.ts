@@ -5,6 +5,8 @@ import mongoose from "mongoose";
 
 const getAllRecipes: RequestHandler = async (req, res) => {
 
+    console.log('req.user =', req.user);
+
     try{
         const allMenu = await Recipes.find().exec();
         res.json(allMenu);
@@ -13,15 +15,12 @@ const getAllRecipes: RequestHandler = async (req, res) => {
         res.status(500).json({ message : 'ดึงข้อมูลไม่สำเร็จ'})
     }
     
-
 }
 
 const addMenu: RequestHandler = async (req, res) => {
     const { menuname, price } = req.body;
     if(!isValidMenuname(menuname)) return res.status(400).json({'message': 'invalid menuname'})
     if(!isValidPrice(price)) return res.status(400).json({'message': 'invalid price'})
-
-    
 
     try{
         const duplicateMenu = await Recipes.findOne({ menuname: menuname.trim() }).exec();
@@ -47,7 +46,6 @@ const updateMenu: RequestHandler = async (req, res) => {
         if(!mongoose.isValidObjectId(req.params.id)){
             return res.status(400).json({ message: 'invalid id format'});
         }
-
 
         try{
             const menuID = await Recipes.findOne({ _id: req.params.id }).exec();
@@ -92,7 +90,6 @@ const updateMenu: RequestHandler = async (req, res) => {
         return res.status(500).json({ message: 'server error' });
         }
 
-        
 }
 
 const deleteMenu: RequestHandler = async (req, res) => {

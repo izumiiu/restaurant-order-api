@@ -1,15 +1,15 @@
 import express from 'express';
 const router = express.Router();
 import { addMenu, getAllRecipes, updateMenu, deleteMenu } from '../../controller/menuController.js';
+import verifyRoles from '../../middleware/verifyRoles.js';
 
 router.route('/')
-.get(getAllRecipes)
-.post(addMenu)
+.get(verifyRoles('customer', 'employee'),getAllRecipes)
+.post(verifyRoles('employee'), addMenu)
 
 router.route('/:id')
-.put(updateMenu)
-.delete(deleteMenu)
+.put(verifyRoles('employee'), updateMenu)
+.delete(verifyRoles('employee'), deleteMenu)
 
-router.route('/incomingMenu')
 
 export default router;
