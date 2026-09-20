@@ -15,6 +15,7 @@ import cookieParser from 'cookie-parser';
 import verifyJWT from './middleware/verifyJWT.js';
 import refreshRouter from './routes/refresh.js';
 import logoutRouter from './routes/logout.js';
+import orderRouter from './routes/api/manageOrder.js';
 connectDB();
 
 app.use(express.urlencoded({ extended: false }));
@@ -29,6 +30,7 @@ app.use('/register', registerRouter);
 app.use('/auth', authRouter);
 app.use('/refresh', refreshRouter);
 app.use('/logout', logoutRouter);
+app.use('/order', verifyJWT, orderRouter);
 app.use('/manageMenu', verifyJWT, manageMenuRouter);
 
 

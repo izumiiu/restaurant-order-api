@@ -14,3 +14,4 @@ export const isValidUsername = (u: unknown): u is string => {
 export const isValidPassword = (p: unknown): p is string => {
     return typeof p === 'string' && p.length >= 8 && !/\s/.test(p);
 }
+

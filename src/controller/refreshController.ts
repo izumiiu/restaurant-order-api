@@ -33,7 +33,6 @@ const handleRefresh: RequestHandler = async (req, res) => {
                 );
         return res.json({ accessToken });
 
-        
     }catch(err){
         if(err instanceof mongoose.Error.CastError) return res.status(401).json({ message: `Cast error` });
 
@@ -42,7 +41,6 @@ const handleRefresh: RequestHandler = async (req, res) => {
         console.error(err);
         return res.status(500).json({ message: `server error` });
     }
-
 
 }
 

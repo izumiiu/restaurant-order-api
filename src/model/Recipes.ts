@@ -3,7 +3,8 @@ const Schema = mongoose.Schema;
 
 interface Recipes {
     menuname: string,
-    price: number
+    price: number,
+    isAvailable: boolean
 }
 
 // เกร็ด: mongoose มี trim: true ให้ใน schema
@@ -16,6 +17,10 @@ const Recipes = new Schema<Recipes>({
     price: {
         type: Number,
         required: true
+    },
+    isAvailable: {
+        type: Boolean,
+        default: true
     }
 })
 

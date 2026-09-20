@@ -10,7 +10,7 @@ interface AccessPayload{
 }
 
 
-const isAccessPayload = (a: unknown): a is AccessPayload => {
+export const isAccessPayload = (a: unknown): a is AccessPayload => {
     return typeof a === 'object' && a !== null && 'userId' in a && 'username' in a && 'role' in a 
                                                                                    && typeof a.userId === 'string'
                                                                                    && typeof a.username === 'string'

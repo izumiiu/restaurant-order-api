@@ -2,7 +2,7 @@
 import mongoose, { Types } from "mongoose";
 const Schema = mongoose.Schema;
 
-interface OrderItem {
+export interface OrderItem {
     menu: Types.ObjectId,
     menuname: string,
     price: number,
