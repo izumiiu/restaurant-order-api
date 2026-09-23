@@ -2,6 +2,8 @@
 import mongoose, { Types } from "mongoose";
 const Schema = mongoose.Schema;
 
+export type OrderStatus = 'pending' | 'cooking' | 'done' | 'cancelled';
+
 export interface OrderItem {
     menu: Types.ObjectId,
     menuname: string,
@@ -13,7 +15,7 @@ interface Order {
     customer: Types.ObjectId,
     items: OrderItem[],
     totalPrice: number,
-    status: 'pending' | 'cooking' | 'done' | 'cancelled',
+    status: 'pending' | 'cooking' | 'done' | 'cancelled', // เดี๋ยวค่อยเอา type มาใช้ซ้ำเดี๋ยวงง
     completedAt?: Date
 }
 

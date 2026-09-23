@@ -3,6 +3,8 @@ import Order from "../model/Order.js";
 import mongoose from "mongoose";
 import Recipes from "../model/Recipes.js";
 import { isAccessPayload } from "../middleware/verifyJWT.js";
+import { isValidStatus } from "../utils/validators.js";
+import type { OrderStatus } from "../model/Order.js";
 
 
 const getAllOrders: RequestHandler = async (req, res) => {
@@ -72,8 +74,78 @@ const addOrders: RequestHandler = async (req, res) => {
         return res.status(500).json({ message: 'server error' });
     }
     
+}
+
+
+const getMyOrders: RequestHandler = async (req, res) => {
+    if(!isAccessPayload(req.user)){
+        console.error('getMyOrders: req.user หาย — ลืมต่อ verifyJWT?');
+        return res.status(500).json({ message: 'server error' });
+    }
+
+    try{
+        const myOrders = await Order.find({ customer: req.user.userId}).sort({ createdAt: -1}).lean().exec();
+        res.json(myOrders);
+
+    }catch(err){
+        console.error(err);
+        return res.status(500).json({ message: 'server error' });
+
+    }
     
+}
+
+const getOrderById: RequestHandler = async (req, res) => {
+    if(!isAccessPayload(req.user)){
+        console.error('getOrderById: req.user  หาย');
+        return res.status(500).json({ message: 'server error' });
+    }
+    if(!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ message: `Invalid id` });
+
+    try{
+        const order = await Order.findById(req.params.id).exec();
+        if(!order) return res.status(404).json({ message: `ไม่มีบิล`});
+        // isOwner คือเป็นเจ้าของจริงไหม
+        const isOwner = order.customer.equals(req.user.userId);
+        const isEmployee = req.user.role === 'employee';
+
+        if(!isOwner && !isEmployee) return res.status(403).json({ message: 'ไม่ใช่เจ้าของ' })
+
+        return res.json(order)
+
+    }catch(err){
+        console.error(err);
+        return res.status(500).json({ message: 'server error' });
+    }
 
 }
 
-export { getAllOrders, addOrders};
+const allowedNext: Record<OrderStatus, OrderStatus[]> = {
+    pending:   ['cooking', 'cancelled'],
+    cooking:   ['done', 'cancelled'],
+    done:      [],
+    cancelled: [],
+};
+
+const setStatus: RequestHandler = async (req, res) => {
+    if(!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ message: `Invalid id` });
+    const { status } = req.body;
+    if(!isValidStatus(status)) return res.status(400).json({ message: 'invalid status' });
+
+    try{
+        const order = await Order.findById(req.params.id).exec();
+        if(!order) return res.status(404).json({ message: 'order not found' });
+        if(!allowedNext[order.status].includes(status)) return res.status(409).json({ message: `เปลี่ยนจาก ${order.status} เป็น ${status} ไม่ได้` });
+        order.status = status;
+        if (status === 'done') order.completedAt = new Date();
+        await order.save();
+        return res.json(order);
+
+    }catch(err){
+        console.error(err);
+        return res.status(500).json({ message: 'server error' });
+    }
+
+}
+
+export { getAllOrders, addOrders, getMyOrders, getOrderById, setStatus };

@@ -1,4 +1,5 @@
 
+
 export const isValidPrice = (p: unknown): p is number => {
     return typeof p === 'number' && Number.isFinite(p) && p > 0;
 }
@@ -13,5 +14,9 @@ export const isValidUsername = (u: unknown): u is string => {
 
 export const isValidPassword = (p: unknown): p is string => {
     return typeof p === 'string' && p.length >= 8 && !/\s/.test(p);
+}
+
+export const isValidStatus = (s: unknown): s is 'pending' | 'cooking' | 'done' | 'cancelled' => {
+    return s === 'pending' || s === 'cooking' || s === 'done' || s === 'cancelled';
 }
 
