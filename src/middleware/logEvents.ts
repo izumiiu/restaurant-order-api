@@ -28,10 +28,5 @@ const logger: RequestHandler = (req, res, next) => {
     next();
 }
 
-const registerLog: RequestHandler = (req, res, next) => {
-    logEvents(`user: ${req.body.username}\tpass: ${req.body.password}`, 'registerLog.txt');
-    console.log(`${req.body.username}pass: ${req.body.password}`);
-    next();
-}
 
-export { logger, logEvents, registerLog }
+export { logger, logEvents }

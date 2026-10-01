@@ -3,10 +3,12 @@
 import './config/loadEnv.js';
 import express from 'express';
 import mongoose from 'mongoose';
-const PORT = 3500;
+const PORT = process.env.PORT || 3500;
 const app = express();
 import connectDB from './config/dbConn.js';
-
+import helmet from 'helmet';
+import cors from 'cors';
+import { corsOptions } from './config/corsOptions.js';
 import { logger } from './middleware/logEvents.js';
 import registerRouter from './routes/register.js';
 import manageMenuRouter from './routes/api/manageMenu.js';
@@ -16,7 +18,12 @@ import verifyJWT from './middleware/verifyJWT.js';
 import refreshRouter from './routes/refresh.js';
 import logoutRouter from './routes/logout.js';
 import orderRouter from './routes/api/manageOrder.js';
+
 connectDB();
+
+app.use(helmet());
+
+app.use(cors(corsOptions))
 
 app.use(express.urlencoded({ extended: false }));
 

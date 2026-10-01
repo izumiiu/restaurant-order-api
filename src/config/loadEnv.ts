@@ -14,3 +14,4 @@ const required = (name: string): string => {
 export const DATABASE_URI = required('DATABASE_URI');
 export const ACCESS_TOKEN_SECRET = required('ACCESS_TOKEN_SECRET');
 export const REFRESH_TOKEN_SECRET = required('REFRESH_TOKEN_SECRET');
+export const ALLOWED_ORIGINS = required('ALLOWED_ORIGINS').split(',');
