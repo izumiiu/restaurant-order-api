@@ -1,0 +1,40 @@
+import './config/loadEnv.js';
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import { corsOptions } from './config/corsOptions.js';
+import { logger } from './middleware/logEvents.js';
+import ensureBody from './middleware/ensureBody.js';
+import registerRouter from './routes/register.js';
+import manageMenuRouter from './routes/api/manageMenu.js';
+import authRouter from './routes/auth.js';
+import cookieParser from 'cookie-parser';
+import verifyJWT from './middleware/verifyJWT.js';
+import refreshRouter from './routes/refresh.js';
+import logoutRouter from './routes/logout.js';
+import orderRouter from './routes/api/manageOrder.js';
+
+const app = express();
+
+app.use(helmet());
+ 
+app.use(cors(corsOptions))
+
+app.use(express.urlencoded({ extended: false }));
+
+app.use(express.json());
+app.use(ensureBody);
+
+app.use(cookieParser());
+
+app.use(logger);
+
+app.use('/register', registerRouter);
+app.use('/auth', authRouter);
+app.use('/refresh', refreshRouter);
+app.use('/logout', logoutRouter);
+app.use('/order', verifyJWT, orderRouter);
+app.use('/manageMenu', verifyJWT, manageMenuRouter);
+
+
+export default app;
