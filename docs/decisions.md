@@ -15,12 +15,11 @@ Trade-off : audit จะขึ้นแดงไปเรื่อยๆ (B จ�
 ## 2026-10-21  การแก้ bug ที่ req.body เป็น undefined
 Problem   : ตอนเทส registerController ด้วย vitest เจอ bug ที่ res.status เป็น 500 แทนที่ควรเป็น 400 แต่ไม่เจอตอนเทสด้วย postman เพราะใน postman เมื่อเลือก body->raw->JSON มันจะติด Content-Type ไห้อัตโนมัติ แต่ใน vitest ไม่ได้ติดอะไรไห้เลยเป็น undefined การ destructure จาก undefined = โยน TypeError ทันที → ไม่มีใครจับ → Express โยน 500 ออกมาซึ่งคาดว่าจะerror เหมือนกันทุก controller เพราะยังไม่มีการทำ validation
 Options   : A) เขียน req.body ?? {}; ทุก controller B) ทำ middleware สำหรับตั้ง req.body เป็น {} หากมันเป็น undefined->วางไว้หลัง express.json() 
-Decision  : เลือกทาง B) เพราะจะได้ไม่ต้องเขียน req.body ?? {}; ใหม่ทุก controller หรือเมื่อมีการเพิ่ม controller ใหม่ขึ้นมา 
+Decision  : เลือก B) เพราะจะได้ไม่ต้องเขียน req.body ?? {}; ใหม่ทุก controller หรือเมื่อมีการเพิ่ม controller ใหม่ขึ้นมา 
 Trade-off : คนที่มารับช่วง project ต่อจะไม่รู้ว่า req.body ปลอดภัยได้ยังไงแต่สามารถแก้ใขปัญหานี้ได้ด้วยการ comment ไว้
 
 # 2026-10-23 การเขียนเทส role ต้องเป็น employee
 Problem    เทสต้องมี user ที่ role = employee แต่ /register สร้างได้แค่ customer
 Options    A) User.create ตรงๆ  B) register แล้ว updateOne แก้ role  C) ให้ /register รับ role
-Decision   B
-Trade-off  ช้ากว่า A ~130ms ต่อ user (ผ่าน bcrypt) แต่เทสไม่ผูกกับวิธีเข้ารหัสรหัสผ่าน
-           C ถูกตัดทิ้งทันที = privilege escalation (ใครยิง {"role":"employee"} ก็เป็นพนักงาน)
+Decision   B) เพราะไม่ได้ข้าม api และไม่ต้องไปยุ่งกับ bcrypt
+Trade-off  ช้ากว่าเพราะต้องผ่าน bcrypt แต่ตั้งใจออกแบบไห้เป็นแบบนี้
