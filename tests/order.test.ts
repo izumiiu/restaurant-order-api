@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import request from 'supertest';
 import app from '../src/app.js';
+import { loginAs } from "./helper.js";
 
 describe('GET /order/me', () => {
   it('ไม่มี token ต้องได้ 401', async () => {
@@ -9,13 +10,17 @@ describe('GET /order/me', () => {
   });
 
   it('มี token ของ customer ต้องได้ 200', async () => {
-    await request(app).post('/register').send({ username: 'tjtj', password: 'tjtesttest' });
-    const loginRes = await request(app).post('/auth').send({ username: 'tjtj', password: 'tjtesttest' });
-    expect(loginRes.status).toBe(200);
-    const token = loginRes.body.accessToken;
+    const token = await loginAs('customer');
     const res = await request(app).get('/order/me').set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);
   });
+
+  it('token ของ employee ต้องได้ 403', async() => {
+    const token = await loginAs('employee');
+    const res = await request(app).get('/order/me').set('Authorization', `Bearer ${token}`);
+    console.log(res.body);
+    expect(res.status).toBe(403);
+  })
 });
 
