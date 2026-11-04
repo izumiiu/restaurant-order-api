@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import User from '../model/User.js';
 import { isValidUsername, isValidPassword } from '../utils/validators.js';
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from '../config/loadEnv.js';
+import { refreshCookieOptions } from '../config/cookieOptions.js';
 
 const handleLogin: RequestHandler = async (req, res) => {
     const { username, password } = req.body;
@@ -37,12 +38,7 @@ const handleLogin: RequestHandler = async (req, res) => {
         foundUser.refreshToken = refreshToken;
         await foundUser.save();
 
-        res.cookie('jwt', refreshToken, {
-            httpOnly: true,          // JS ในหน้าเว็บอ่านไม่ได้ กัน XSS ขโมย token
-            sameSite: 'none',        // ยอมให้ส่งข้ามโดเมน (React คนละ port)
-            secure: true,            // ส่งเฉพาะ https  ← ดูหมายเหตุข้างล่าง
-            maxAge: 24 * 60 * 60 * 1000
-            });
+        res.cookie('jwt', refreshToken, refreshCookieOptions);
         res.json({ accessToken });
 
 

@@ -1,6 +1,7 @@
 import type { RequestHandler } from "express";
 import User from "../model/User.js";
 import mongoose from "mongoose";
+import { cookieOptions } from "../config/cookieOptions.js";
 
 
 const handleLogout: RequestHandler = async (req, res) => {
@@ -11,15 +12,12 @@ const handleLogout: RequestHandler = async (req, res) => {
     try{
         const user = await User.findOne({ refreshToken: cookieToken }).exec();
         if(!user) {
-            res.clearCookie('jwt', {httpOnly: true,          
-            sameSite: 'none',        
-            secure: true,
-            });
+            res.clearCookie('jwt', cookieOptions);
             return res.sendStatus(204);
         }
         user.refreshToken = undefined;
         await user.save();
-        res.clearCookie('jwt', {httpOnly: true, sameSite: 'none', secure: true});
+        res.clearCookie('jwt', cookieOptions);
         return res.sendStatus(204);
         
 
