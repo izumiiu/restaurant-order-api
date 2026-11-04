@@ -6,7 +6,9 @@ const connectDB = async () => {
     try{
         await mongoose.connect(DATABASE_URI);
     } catch (err){
-        console.log(err);
+        console.error('ต่อ MongoDB ไม่ได้ — ตรวจ DATABASE_URI และ Atlas Network Access');
+        console.error(err);
+        process.exit(1);
     }
 }
 
