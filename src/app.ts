@@ -13,6 +13,7 @@ import verifyJWT from './middleware/verifyJWT.js';
 import refreshRouter from './routes/refresh.js';
 import logoutRouter from './routes/logout.js';
 import orderRouter from './routes/api/manageOrder.js';
+import healthCheckerRouter from './routes/health.js';
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/refresh', refreshRouter);
 app.use('/logout', logoutRouter);
 app.use('/order', verifyJWT, orderRouter);
 app.use('/manageMenu', verifyJWT, manageMenuRouter);
+app.use('/health', healthCheckerRouter);
 
 
 export default app;
