@@ -14,24 +14,24 @@ import refreshRouter from './routes/refresh.js';
 import logoutRouter from './routes/logout.js';
 import orderRouter from './routes/api/manageOrder.js';
 import healthCheckerRouter from './routes/health.js';
-
+import { authLimiter, registerLimiter } from './middleware/rateLimiters.js';
 const app = express();
 
 app.use(helmet());
  
 app.use(cors(corsOptions))
 
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false, limit: '10kb' }));
 
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
 app.use(ensureBody);
 
 app.use(cookieParser());
 
 app.use(logger);
 
-app.use('/register', registerRouter);
-app.use('/auth', authRouter);
+app.use('/register', registerLimiter, registerRouter);
+app.use('/auth', authLimiter, authRouter);
 app.use('/refresh', refreshRouter);
 app.use('/logout', logoutRouter);
 app.use('/order', verifyJWT, orderRouter);
