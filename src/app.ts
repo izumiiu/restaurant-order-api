@@ -16,6 +16,7 @@ import orderRouter from './routes/api/manageOrder.js';
 import healthCheckerRouter from './routes/health.js';
 import { authLimiter, registerLimiter } from './middleware/rateLimiters.js';
 const app = express();
+app.set('trust proxy', 1);
 
 app.use(helmet());
  
