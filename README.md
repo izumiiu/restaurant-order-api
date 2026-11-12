@@ -26,10 +26,6 @@ REST API สำหรับระบบสั่งอาหารในร้�
 - Health check endpoint พร้อมเช็คสถานะ DB
 - Integration tests + CI
 
-## Roadmap
-- [ ] React frontend
-- [ ] Deployment
-
 ## API
 
 | Method | Endpoint | Access | Notes |
@@ -86,5 +82,73 @@ npm run dev      # terminal 2 — nodemon เฝ้า dist/
 | `npm start` | รันเวอร์ชันที่คอมไพล์แล้ว |
 | `npm test` | รันเทสทั้งหมดหนึ่งรอบ |
 | `npm run test:watch` | รันเทสแบบ watch |
+
+## Testing
+
+```bash
+npm test          # รันทั้งหมดหนึ่งรอบ
+npm run test:watch
+```
+
+ใช้ [Vitest](https://vitest.dev) + [Supertest](https://github.com/ladjs/supertest) +
+[mongodb-memory-server](https://github.com/typegoose/mongodb-memory-server)
+
+เทสยิงผ่าน HTTP จริงเข้า Express app และเขียนลง MongoDB ที่รันในหน่วยความจำ
+**clone มาแล้ว `npm test` ได้ทันที** ไม่ต้องมี Atlas ไม่ต้องตั้ง `.env` ไม่ต้องรัน server แยก
+(เหตุผลที่เลือกวิธีนี้อยู่ใน [docs/decisions.md](docs/decisions.md))
+
+ทุก push และ pull request เข้า `main` จะรัน `npm run build` และ `npm test` บน GitHub Actions
+
+### Covered
+
+ตอนนี้เทสเน้นที่ชั้น authentication / authorization เป็นหลัก — 11 เทส
+
+| ไฟล์ | ครอบคลุม |
+|---|---|
+| `db.test.ts` | การเชื่อมต่อ database ในเทส |
+| `health.test.ts` | `GET /health` → 200 |
+| `order.test.ts` | `GET /order/me` — ไม่มี token 401 / customer 200 / employee 403<br>`POST /order` — employee 403<br>`PATCH /order/:id/status` — customer 403 |
+| `register.test.ts` | สมัครสำเร็จ 201 / username ซ้ำ 409 / ไม่ส่ง body 400 / `beforeEach` ล้าง DB จริง |
+
+### Not covered
+
+ยังไม่ได้เขียน เรียงตามขนาดพื้นที่ที่ยังไม่ถูกตรวจ — อยู่ใน [Roadmap](#roadmap)
+
+- **`menuController`** — ทั้งไฟล์ยังไม่มีเทสเลย เป็นส่วนที่ใหญ่ที่สุดที่ยังว่าง
+- **business logic ของ `orderController`** — ตอนนี้เทสครอบคลุมเฉพาะการกันสิทธิ์ ส่วนที่ยังไม่ถูกตรวจคือ
+  - state machine เปลี่ยน status ผิดลำดับ → 409
+  - ownership ไม่ใช่เจ้าของบิล → 403 / 404
+  - การคำนวณ `totalPrice` และการเก็บราคา ณ เวลาที่สั่ง
+  - เมนูหมด / เมนูซ้ำในบิลเดียว / `menu` id ที่ไม่มีใน DB
+- **`POST /refresh`** — ทั้ง flow
+- **`POST /auth`** — ตอนนี้ถูกยิงทางอ้อมผ่าน helper `loginAs` เฉพาะเส้นทางที่สำเร็จ ยังไม่มีเทสกรณีรหัสผิด 401
+- **`POST /logout`**
+- **rate limit และ body size limit**
+
+## Out of scope
+ใน version นี้ยังไม่รวม 
+- ระบบจอง
+- ระบบชำระเงิน
+- นับสต็อควัตถุดิบ
+
+## Design decisions
+
+การตัดสินใจที่ไม่ชัดในตัวเองถูกบันทึกไว้ที่ [`docs/decisions.md`](docs/decisions.md)
+แต่ละรายการเก็บปัญหา ตัวเลือกที่พิจารณา เหตุผลที่เลือก และสิ่งที่ยอมแลก
+
+- **เปิด `0.0.0.0/0` ใน IP access list ของ Atlas** — host ฟรีไม่ให้ static outbound IP
+  และ Private Endpoint ต้องใช้ M10 ขึ้นไป จึงเลือกเปิดทั้งหมดโดยย้ายด่านป้องกันไปไว้ที่
+  DB user ที่มีสิทธิ์เฉพาะ `readWrite` บน database ของตัวเอง พร้อมบันทึกเงื่อนไขที่จะกลับมาทบทวน
+
+- **middleware `ensureBody`** — ตอนย้ายจากการทดสอบด้วย Postman มาเป็น Supertest เจอว่า
+  `req.body` เป็น `undefined` เพราะ Postman ติด `Content-Type` ให้อัตโนมัติ แต่ Supertest ไม่ติด
+  การ destructure จาก `undefined` ทำให้ทุก controller ตอบ 500 แทน 400
+
+## Roadmap
+- [ ] React frontend
+- [ ] Deployment
+- [ ] เทส business logic (state machine, ownership, ราคา)
+- [ ] เทส menuController
+
 
 
