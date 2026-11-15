@@ -120,32 +120,36 @@ const getOrderById: RequestHandler = async (req, res) => {
 
 }
 
-const allowedNext: Record<OrderStatus, OrderStatus[]> = {
-    pending:   ['cooking', 'cancelled'],
-    cooking:   ['done', 'cancelled'],
-    done:      [],
-    cancelled: [],
+const allowedFrom: Record<OrderStatus, OrderStatus[]> = {
+    pending:   [],
+    cooking:   ['pending'],
+    done:      ['cooking'],
+    cancelled: ['pending', 'cooking'],
 };
 
 const setStatus: RequestHandler = async (req, res) => {
     if(!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ message: `Invalid id` });
     const { status } = req.body;
     if(!isValidStatus(status)) return res.status(400).json({ message: 'invalid status' });
+    const update = status === 'done' ? { status, completedAt: new Date() } : { status };
 
     try{
-        const order = await Order.findById(req.params.id).exec();
-        if(!order) return res.status(404).json({ message: 'order not found' });
-        if(!allowedNext[order.status].includes(status)) return res.status(409).json({ message: `เปลี่ยนจาก ${order.status} เป็น ${status} ไม่ได้` });
-        order.status = status;
-        if (status === 'done') order.completedAt = new Date();
-        await order.save();
+        const order = await Order.findOneAndUpdate(
+            { _id: req.params.id, status:  { $in: allowedFrom[status] } },
+            { $set: update },
+            { returnDocument: 'after' }
+        ).exec();
+        if(order === null){
+            const found = await Order.findOne({ _id: req.params.id }).exec();
+            if(!found) return res.status(404).json({ message: 'order not found' });
+            return res.status(409).json({ message: `เปลี่ยนจาก ${found.status} เป็น ${status} ไม่ได้` });
+        }
         return res.json(order);
 
-    }catch(err){
+    } catch(err){
         console.error(err);
         return res.status(500).json({ message: 'server error' });
     }
-
 }
 
 export { getAllOrders, addOrders, getMyOrders, getOrderById, setStatus };

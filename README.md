@@ -17,7 +17,7 @@ REST API สำหรับระบบสั่งอาหารในร้�
 - JWT authentication — access token + refresh token (httpOnly cookie)
 - Role-based access control (customer / employee)
 - Ownership check — ลูกค้าเข้าถึงได้เฉพาะบิลของตัวเอง
-- Order status state machine — กันเปลี่ยนสถานะย้อนกลับและข้ามขั้น
+- Order status state machine — กันเปลี่ยนสถานะย้อนกลับ, ข้ามขั้น, และป้องกันการเกิด race condition เมื่อพนักงาน set status พร้อมกัน
 - ราคาคำนวณฝั่ง server + snapshot ราคาและชื่อเมนูลงในบิล
 - Input validation ทุก endpoint
 - Security headers (helmet) + CORS allowlist จาก env
@@ -143,6 +143,13 @@ npm run test:watch
 - **middleware `ensureBody`** — ตอนย้ายจากการทดสอบด้วย Postman มาเป็น Supertest เจอว่า
   `req.body` เป็น `undefined` เพราะ Postman ติด `Content-Type` ให้อัตโนมัติ แต่ Supertest ไม่ติด
   การ destructure จาก `undefined` ทำให้ทุก controller ตอบ 500 แทน 400
+
+- **atomic design ใน setStatus** — การใช้ read-check-write แบบเดิมใน set status
+  ทำให้เมื่อพนักงานกด set status พร้อมกันจะเกิด race condition
+  เพราะมี gap await ระหว่าง `Order.findById()` --> `order.save()`
+  ถึงแม้โอกาสกดพร้อมกันจะเกิดน้อยแต่ค่าใช้จ่ายในการแก้มันแค่โค้ดไม่กี่บรรทัด
+  เลยเปลี่ยนไปใช้แนวคิดแบบ atomic ใช้ `findOneAndUpdate()` แทน
+  แลกกับการ query เพิ่ม 1 ครั้งเพื่อแยก 404 และ 409 ออกจากกัน
 
 ## Roadmap
 - [ ] React frontend

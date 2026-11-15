@@ -31,4 +31,10 @@ Decision  : เลือก A) เพราะ mongo atlas ที่ใช้เ
 Trade-off : เปิด 0.0.0.0/0 เป็นการตัด network layer ออกจากการป้องกันทั้งหมดแต่ยังมีด่านที่เหลือ 2 ขั้นคือ 1)db password มีสิทธิ์แค่ readWrite@restaurant01 2).env ไม่หลุด
 Revisit when : เมื่อซื้อ static outbound IP หรือ เมื่อเปลี่ยนไปใช้ package M10 ขึ้นไป หรือตอนเริ่มเก็บข้อมูลลูกค้าจริง
 
+## 2026-11-14 race condition ใน set status
+Problem   : เมื่อพนักงานกด set status พร้อมกันมันจะเกิดการบั๊กเพราะ function มี gap ระหว่างแต่ละ await findOne --> await save
+Options   : A) ใช้วิธีเขียนแบบ atomic B) ปล่อยไว้เพราะโดยทั่วไปแล้วร้านอาหารจะมีพนักงานคอยคีย์ข้อมูลคนเดียวจึงมีโอกาสน้อยมากที่จะกดพร้อมกัน
+Decision  : เลือก A) เพราะถึงจะมีโอกาสน้อยที่พนักงานจะกดพร้อมกันแต่ค่าใช้จ่ายในการเขียนแบบ atomic มันน้อยมากแค่ไม่กี่บรรทัด
+Trade-off : query เพิ่ม 1 ครั้งเพื่อแยก 404 กับ 409 ตอน findOneAndUpdate คืน null
+
 
