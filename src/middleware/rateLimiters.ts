@@ -19,3 +19,13 @@ export const registerLimiter = rateLimit({
     legacyHeaders: false,
     skipSuccessfulRequests: false
 })
+
+export const postOrderLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    limit: 100,
+    message: { message: `กรุณาลองใหม่อีกครั้งในอีกสักครู่ rate-limit-detected` },
+    statusCode: 429,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    skipSuccessfulRequests: false
+})
