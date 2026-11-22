@@ -2,6 +2,7 @@ import type { RequestHandler } from "express";
 import Recipes from "../model/Recipes.js";
 import { isValidMenuname, isValidPrice } from "../utils/validators.js";
 import mongoose from "mongoose";
+import type { OptionGroup } from "../model/Recipes.js";
 
 const getAllRecipes: RequestHandler = async (req, res) => {
 
@@ -17,24 +18,67 @@ const getAllRecipes: RequestHandler = async (req, res) => {
     
 }
 
-const addMenu: RequestHandler = async (req, res) => {
-    const { menuname, price } = req.body;
-    if(!isValidMenuname(menuname)) return res.status(400).json({'message': 'invalid menuname'})
-    if(!isValidPrice(price)) return res.status(400).json({'message': 'invalid price'})
+interface Option {
+    name: string,
+    isAvailable?: boolean
+}
 
+const isValidOption = (o: unknown): o is Option => {
+    return typeof o === 'object' && o !== null && 'name' in o && typeof o.name === 'string' 
+                                                              && (!('isAvailable' in o) || typeof o.isAvailable === 'boolean')
+                                                              && o.name.trim().length > 0
+                                                              
+
+}
+
+const isValidOptionGroup = (g: unknown): g is OptionGroup => {
+    return typeof g === 'object' && g !== null && 'name' in g && 'freeQuota' in g && 'unitPrice' in g 
+                                                                                  && 'options' in g
+                                                                                  && typeof g.name === 'string'
+                                                                                  && typeof g.freeQuota === 'number'
+                                                                                  && typeof g.unitPrice === 'number'
+                                                                                  && Array.isArray(g.options)
+                                                                                  && g.options.every(isValidOption)
+                                                                                  && Number.isInteger(g.freeQuota)
+                                                                                  && g.freeQuota >= 0
+                                                                                  && g.unitPrice >= 0
+                                                                                  && g.name.trim().length > 0                                                                     
+}
+
+const addMenu: RequestHandler = async (req, res) => {
+    const { menuname, price, optionGroups } = req.body;
+    if(!isValidMenuname(menuname)) return res.status(400).json({'message': 'invalid menuname'});
+    if(!isValidPrice(price)) return res.status(400).json({'message': 'invalid price'});
+    if(optionGroups !== undefined){
+        if(Array.isArray(optionGroups)){
+            if(!optionGroups.every(isValidOptionGroup)) return res.status(400).json({ message: `invalid optionGroups` });
+        }else{
+            return res.status(400).json({ message: `wrong body`});
+        }
+    }
+    
     try{
         const duplicateMenu = await Recipes.findOne({ menuname: menuname.trim() }).exec();
-        if (duplicateMenu) return res.status(409).json({ message: 'the menu is duplicate' })
+        if (duplicateMenu) return res.status(409).json({ message: 'the menu is duplicate' });
 
         const menu = await Recipes.create({
             menuname: menuname.trim(),
-            price: price
+            price: price,
+            optionGroups: optionGroups
         });
         res.status(201).json(menu);
+
     } catch (err){
+        if(err instanceof mongoose.Error.CastError){
+            return res.status(400).json({ message: `ข้อมูลผิดประเภท` });
+        }
+        if(err instanceof mongoose.Error.ValidationError){
+            return res.status(400).json({ message: `ข้อมูลผิดเงื่อนไข` });
+        }
 
         if (err && typeof err === 'object' && 'code' in err && err.code === 11000) return res.status(409).json({ message: 'เมนูนี้มีอยู่แล้ว' });
-        res.status(500).json({ message: 'เพิ่มเมนูไม่สำเร็จ' });
+        console.error(err);
+        return res.status(500).json({ message: 'เพิ่มเมนูไม่สำเร็จ' });
     }
 
 }
