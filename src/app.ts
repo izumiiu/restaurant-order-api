@@ -35,8 +35,8 @@ app.use('/register', registerLimiter, registerRouter);
 app.use('/auth', authLimiter, authRouter);
 app.use('/refresh', refreshRouter);
 app.use('/logout', logoutRouter);
-app.use('/order', verifyJWT, orderRouter);
-app.use('/manageMenu', verifyJWT, manageMenuRouter);
+app.use('/order', orderRouter);
+app.use('/manageMenu', manageMenuRouter);
 app.use('/health', healthCheckerRouter);
 
 

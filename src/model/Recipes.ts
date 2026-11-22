@@ -1,13 +1,15 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 const Schema = mongoose.Schema;
 
 interface Option {
+    _id: Types.ObjectId,
     name: string,
     isAvailable: boolean
 }
 
 
 export interface OptionGroup {
+    _id: Types.ObjectId,
     name: string,
     freeQuota: number,
     unitPrice: number,
@@ -37,10 +39,10 @@ const Recipes = new Schema<Recipes>({
         type: Boolean,
         default: true
     },
-    optionGroups: [{ name: { type: String, required: true},
+    optionGroups: [{ name: { type: String, trim: true, required: true},
                      freeQuota: { type: Number, required: true},
                      unitPrice: { type: Number, required: true},
-                     options: [{ name: { type: String, required: true},
+                     options: [{ name: { type: String, trim: true, required: true},
                                  isAvailable: { type: Boolean, default: true}
                               }]
                   }]
