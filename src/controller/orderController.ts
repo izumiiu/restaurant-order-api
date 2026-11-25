@@ -240,5 +240,27 @@ const setStatus: RequestHandler = async (req, res) => {
     }
 }
 
+
+
+const validateOrderCode = (c: unknown): c is string => {
+    return typeof c === 'string';
+}
+
+const getOrderByOrderCode: RequestHandler = async (req, res) => {
+    const { orderCode } = req.body;
+    if(!validateOrderCode(orderCode)) return res.status(400).json({ message: `wrong body` });
+    const filter = orderCode.trim().toUpperCase();
+     
+    try{
+        const order = await Order.findOne({ orderCode: filter}).select('customerName orderCode items totalPrice status createdAt').exec();
+        if(!order) return res.status(404).json({ message: `ไม่พบรายการ`});
+        return res.json(order);
+    }catch(err){
+
+        console.error(err);
+        return res.status(500).json({ message: 'server error' });
+    }
+}
+
 // export { getAllOrders, addOrders, getMyOrders, getOrderById, setStatus };
-export { getAllOrders, addOrders, setStatus };
+export { getAllOrders, addOrders, setStatus, getOrderByOrderCode };
