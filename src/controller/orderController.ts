@@ -5,6 +5,7 @@ import Recipes from "../model/Recipes.js";
 import { isAccessPayload } from "../middleware/verifyJWT.js";
 import { isValidStatus } from "../utils/validators.js";
 import type { OrderItem, OrderStatus, AddOns } from "../model/Order.js";
+import { randomInt } from 'node:crypto';
 
 
 const getAllOrders: RequestHandler = async (req, res) => {
@@ -68,6 +69,16 @@ const isValidateOrderInfo = (i: unknown):i is OrderItemInfo => {
 }
 
 
+// 31 ตัว: A–Z ไม่มี I L O และ 2–9 เพราะตัวอักษรคล้ายกันดูยาก
+const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+export const generateOrderCode = (length = 6): string => {
+    let code = '';
+    for (let i = 0; i < length; i++) {
+        code += ALPHABET[randomInt(ALPHABET.length)];
+    }
+    return code;
+};
+
 const addOrders: RequestHandler = async (req, res) => {
     const { items, information } = req.body;
     if(!Array.isArray(items)) return res.status(400).json({ message: `body is not array`});
@@ -121,15 +132,30 @@ const addOrders: RequestHandler = async (req, res) => {
 
         const totalPrice = orderMenu.reduce((sum, t) => sum + ((t.price + t.addOnsPrice) * t.quantity), 0);
 
-        const newOrder = await Order.create({
-            customerName: information.customerName,
-            phoneNumber: information.phoneNumber,
-            location: information.location,
-            items: orderMenu,
-            totalPrice: totalPrice
-        });
+        for(let attempt = 1;attempt <=5; attempt++){
+            try{
 
-        return res.status(201).json(newOrder);
+                const orderCode = generateOrderCode();
+
+                const newOrder = await Order.create({
+                customerName: information.customerName,
+                phoneNumber: information.phoneNumber,
+                location: information.location,
+                orderCode: orderCode,
+                items: orderMenu,
+                totalPrice: totalPrice
+                });
+
+                return res.status(201).json(newOrder);
+            } catch(err){
+                if (err && typeof err === 'object' && 'code' in err && err.code === 11000) continue;
+                throw err;
+                
+            }
+            
+        }
+        console.error('too many attempt to generate order code');
+        return res.status(500).json({ message: `cannot create orderCode` });
 
     }catch(err){
         console.error(err);

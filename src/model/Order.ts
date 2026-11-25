@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 
 export type OrderStatus = 'pending' | 'cooking' | 'done' | 'cancelled';
 
-interface AddOns {
+export interface AddOns {
     addOnsId: Types.ObjectId,
     addOnsName: string,
     quantity: number,
@@ -25,6 +25,7 @@ interface Order {
     customerName: string,
     phoneNumber: string,
     location: string,
+    orderCode: string,
     items: OrderItem[],
     totalPrice: number,
     status: 'pending' | 'cooking' | 'done' | 'cancelled', // เดี๋ยวค่อยเอา type มาใช้ซ้ำเดี๋ยวงง
@@ -34,8 +35,9 @@ interface Order {
 
 const orderSchema = new Schema<Order>({
     customerName: { type: String, required: true },
-    phoneNumber: { type: String, required: true},
+    phoneNumber: { type: String, required: true },
     location: { type: String, required: true },
+    orderCode: { type: String, unique: true, required: true },
     items: [{
         menu: { type: Schema.Types.ObjectId, ref: 'Foodmenu', required: true },
         menuname: { type: String, required: true },
